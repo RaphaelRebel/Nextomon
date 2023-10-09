@@ -1,9 +1,11 @@
-"use client"
+"use client";
 import { useSession } from "next-auth/react";
 
 import styled from "styled-components";
 // import { PokeProvider } from "@/app/Data/PokemonId";
 import CatchPmBlock from "@/app/components/CatchPmBlock";
+import AttackedPoke from "@/app/components/AttackedPoke";
+import { PokeProvider } from "@/app/Data/PokemonId";
 const Div = styled.div`
   width: 64rem;
   height: auto;
@@ -15,20 +17,21 @@ const Div = styled.div`
   }
 `;
 
-
-
 export default function Home() {
   const { data: session } = useSession();
 
   return session ? (
-    <Div>
-      {/* <PokeProvider> */}
-        <CatchPmBlock test={1}  />
-        <CatchPmBlock test={2}  />
-        <CatchPmBlock test={3}  />
-        <CatchPmBlock test={4}  />
-      {/* </PokeProvider> */}
-    </Div>
+    <>
+      <PokeProvider>
+        <Div>
+          <CatchPmBlock />
+          <CatchPmBlock />
+          <CatchPmBlock />
+          <CatchPmBlock />
+        </Div>
+        <AttackedPoke />
+      </PokeProvider>
+    </>
   ) : (
     <p>Not signed in</p>
   );

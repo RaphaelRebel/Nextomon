@@ -9,23 +9,19 @@ interface pokeContext {
 }
 
 export interface Poke {
-  id: string;
   name: string;
   pokemon_id: number;
-  user_email: string;
 }
 
 export const PokeContext = createContext<pokeContext>({
-  userPokeData: { id: "", name: "", pokemon_id: 0, user_email: "" },
+  userPokeData: { name: "", pokemon_id: 0 },
   setUserPokeData: (value: Poke) => undefined,
 });
 
-export const PokeProvider = ({ children }: { children: ReactNode }) => {
+export const PokeProvider: any = ({ children }: { children: ReactNode }) => {
   const [userPokeData, setUserPokeData] = useState<Poke>({
-    id: "",
     name: "",
     pokemon_id: 0,
-    user_email: "",
   });
   return (
     <PokeContext.Provider value={{ userPokeData, setUserPokeData }}>

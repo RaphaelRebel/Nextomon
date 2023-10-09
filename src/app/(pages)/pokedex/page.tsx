@@ -17,6 +17,17 @@ const PokeBlock = styled.div`
   height: 25rem;
   background-color: #d9d9d9;
   margin: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const Img = styled.img`
+  background-color: #337ccf;
+  border-radius: 9rem;
+  margin: 1rem;
+  object-fit: contain;
+  padding: 1rem;
 `;
 
 interface Data {
@@ -43,8 +54,14 @@ export default function Page() {
   }, [getPokemon]);
 
   const PokemonCard = pokeData?.map((item: Data) => {
-    return <PokeBlock key={item.id}>{item.name}
-    <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${item.pokemon_id}.png`}/></PokeBlock>;
+    return (
+      <PokeBlock key={item.id}>
+        <Img
+          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${item.pokemon_id}.png`}
+        />
+        {item.name}
+      </PokeBlock>
+    );
   });
 
   return <Section>{PokemonCard}</Section>;

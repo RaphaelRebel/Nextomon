@@ -3,9 +3,10 @@ import { addDoc, collection, getFirestore } from "firebase/firestore";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import getFirestoreConfig from "../firebaseConfig";
+import { PokeContext } from "../Data/PokemonId";
 
 const db = getFirestoreConfig();
 
@@ -38,6 +39,14 @@ interface PokeInfo {
   };
 }
 
+interface Data {
+  id: string;
+  name: string;
+  pokemon_id: number;
+  user_email: string;
+  push: (value: any) => void;
+}
+
 const Img = styled(motion.img)`
   width: 10rem;
   height: auto;
@@ -62,6 +71,12 @@ const Button = styled.button`
 
 const ButtonParent = styled.div`
   display: flex;
+`;
+
+const P = styled.p`
+  text-align: center;
+  font-size: 150%;
+  width: 100%;
 `;
 
 async function getPokeInfo(randomId: number) {
@@ -92,22 +107,53 @@ async function getPokeInfo(randomId: number) {
   }
 }
 
-export default function GetPokemon({ randomId }: { randomId: number }) {
-  const [pokeInfo, setPokeInfo] = useState<string | null | []>();
+export default function GetPokemon({
+  randomId,
+  newRandom,
+}: {
+  randomId: number;
+  newRandom: () => void;
+}) {
+  const [pokeInfo, setPokeInfo] = useState<PokeInfo | string>();
   const [pokeHP, setPokeHP] = useState<number>(0);
   const [pokeFullHP, setPokeFullHP] = useState<number>(0);
   const [caughtOrRan, setCaughtOrRan] = useState<boolean>(false);
+  const { userPokeData, setUserPokeData } = useContext(PokeContext);
   const { data: session } = useSession();
 
   const attack = () => {
     let randomNumber = Math.floor(Math.random() * (21 - 1) + 1);
+    if (userPokeData.name !== pokeInfo?.name) {
+      setUserPokeData({
+        name: pokeInfo?.name ?? "",
+        pokemon_id: randomId,
+      });
+    }
+
     if (pokeHP - randomNumber <= 0) {
       setPokeHP(0);
       setCaughtOrRan(true);
+       newRandom();
     } else {
       setPokeHP(pokeHP - randomNumber);
     }
   };
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const data = await getPokeInfo(randomId);
+        setPokeInfo(data ?? "Pokemon not found!");
+        setPokeHP(data?.stats?.[0].base_stat);
+        setPokeFullHP(data?.stats?.[0].base_stat);
+      } catch (error: any) {
+        console.error("Error fetching data from PokeAPI:", error.message);
+        setPokeInfo("Ohno! Couldn't find that pokemon!");
+      }
+    }
+
+    fetchData();
+  }, [randomId]);
 
   const catchPoke = () => {
     setCaughtOrRan(true);
@@ -118,25 +164,11 @@ export default function GetPokemon({ randomId }: { randomId: number }) {
       const sessionEmail: string = session?.user?.email ?? "No email found";
       WriteToCloudFirestore(pokeInfo?.name, randomId, sessionEmail);
     } else {
-      console.log("escaped");
+      console.log(pokeInfo.name, " escaped");
     }
+
+    newRandom();
   };
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const data = await getPokeInfo(randomId);
-        setPokeInfo(data ? data : "Pokemon not found!");
-        setPokeHP(data?.stats?.[0].base_stat);
-        setPokeFullHP(data?.stats?.[0].base_stat);
-      } catch (error: any) {
-        console.error("Error fetching data from PokeAPI:", error.message);
-        setPokeInfo("Error fetching data");
-      }
-    }
-
-    fetchData();
-  }, [randomId]);
 
   return (
     <>
@@ -156,7 +188,7 @@ export default function GetPokemon({ randomId }: { randomId: number }) {
         {pokeInfo?.name}
       </H2>
       {/* Get pokeinfo base_stat */}
-      <p>{pokeHP}</p>
+      <P>{pokeHP}</P>
 
       <ButtonParent>
         <Button onClick={attack}>Attack</Button>
