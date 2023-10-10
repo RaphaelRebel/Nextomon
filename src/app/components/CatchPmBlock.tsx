@@ -23,15 +23,13 @@ const H1 = styled.h1`
 
 export default function CatchPmBlock() {
   const [id, setId] = useState<number>(0);
-  
-  
+
   useEffect(() => {
     const randomId: number = getRandomInt(1, 1010);
-  function getRandomInt(min: number, max: number) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-  }
+    function getRandomInt(min: number, max: number) {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    }
     setId(randomId);
-    
   }, []);
 
   //   const { id, setId } = useContext(PokeContext);
@@ -42,10 +40,10 @@ export default function CatchPmBlock() {
   //   }, []);
 
   //   console.log(randomId());
- 
+
   //   console.log(test);
 
-  function newRandom() {
+function newRandom() {
     const randomId: number = getRandomInt(1, 1010);
     function getRandomInt(min: number, max: number) {
       return Math.floor(Math.random() * (max - min + 1) + min);
@@ -55,7 +53,7 @@ export default function CatchPmBlock() {
 
   return (
     <Div>
-      <GetPokemon randomId={id} newRandom={newRandom}/>
+      <GetPokemon randomId={id} newRandom={newRandom} />
     </Div>
   );
 }

@@ -4,47 +4,21 @@ import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 
 import React, { useContext, useEffect, useState } from "react";
-import styled from "styled-components";
-import getFirestoreConfig from "../firebaseConfig";
+import styled, { ThemeProvider } from "styled-components";
+import getFirestoreConfig, { WriteToCloudFirestore } from "../firebaseConfig";
 import { PokeContext } from "../Data/PokemonId";
+import { attackPoke, catchPoke } from "../functions/CatchOrAttack";
 
 const db = getFirestoreConfig();
 
 //Get id of logged in user
 // const user = sessionUser();
 
-// const user_id = user?.user?.id;
-async function WriteToCloudFirestore(
-  name: string,
-  pokemon_id: number,
-  user_email: string
-) {
-  try {
-    const docRef = await addDoc(collection(db, "pokemon"), {
-      name: name,
-      pokemon_id: pokemon_id,
-      user_email: user_email,
-    });
-    console.log("Document written with ID: ", docRef.id);
-  } catch (error) {
-    console.error(error);
-    alert(error);
-  }
-}
-
-interface PokeInfo {
+export interface PokeInfo {
   name: string;
   stats: {
     base_stat: number;
   };
-}
-
-interface Data {
-  id: string;
-  name: string;
-  pokemon_id: number;
-  user_email: string;
-  push: (value: any) => void;
 }
 
 const Img = styled(motion.img)`
@@ -58,16 +32,28 @@ const H2 = styled(motion.h2)`
   font-weight: 400;
 `;
 
+const theme = {
+  colors: {
+    primary: "white",
+  },
+};
+
 const Button = styled.button`
   width: 40%;
   height: 3rem;
   margin: 1rem;
   background-color: #337ccf;
-  color: white;
+  color: ${(props) => props.theme.colors.primary};
   border: none;
   font-size: 100%;
   cursor: pointer;
 `;
+
+Button.defaultProps = {
+  theme: {
+    color: "#337ccf",
+  },
+};
 
 const ButtonParent = styled.div`
   display: flex;
@@ -83,14 +69,6 @@ async function getPokeInfo(randomId: number) {
   if (!randomId) return null;
   try {
     const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${randomId}`);
-
-    // if (!res.ok) {
-    //   if (res.status === 404) {
-    //     throw new Error("Pokemon not found!");
-    //   } else {
-    //     throw new Error(`HTTP error! status: ${res.status}`);
-    //   }
-    // }
 
     const data = await res.json();
 
@@ -121,22 +99,17 @@ export default function GetPokemon({
   const { userPokeData, setUserPokeData } = useContext(PokeContext);
   const { data: session } = useSession();
 
-  const attack = () => {
-    let randomNumber = Math.floor(Math.random() * (21 - 1) + 1);
-    if (userPokeData.name !== pokeInfo?.name) {
-      setUserPokeData({
-        name: pokeInfo?.name ?? "",
-        pokemon_id: randomId,
-      });
-    }
-
-    if (pokeHP - randomNumber <= 0) {
-      setPokeHP(0);
-      setCaughtOrRan(true);
-       newRandom();
-    } else {
-      setPokeHP(pokeHP - randomNumber);
-    }
+  const attackPokeCall = () => {
+    attackPoke({
+      userPokeData,
+      pokeInfo,
+      randomId,
+      setUserPokeData,
+      pokeHP,
+      setPokeHP,
+      setCaughtOrRan,
+      newRandom,
+    });
   };
 
   useEffect(() => {
@@ -155,19 +128,15 @@ export default function GetPokemon({
     fetchData();
   }, [randomId]);
 
-  const catchPoke = () => {
-    setCaughtOrRan(true);
-    let damagePercentage = 100 - Math.floor((pokeHP / pokeFullHP) * 100);
-    let dice = Math.floor(Math.random() * (100 - 1) + 1);
-    if (damagePercentage > dice) {
-      console.log("caught");
-      const sessionEmail: string = session?.user?.email ?? "No email found";
-      WriteToCloudFirestore(pokeInfo?.name, randomId, sessionEmail);
-    } else {
-      console.log(pokeInfo.name, " escaped");
-    }
-
-    newRandom();
+  const catchPokeCall: () => void = () => {
+    catchPoke({
+      newRandom,
+      randomId,
+      pokeHP,
+      pokeFullHP,
+      session,
+      pokeInfo,
+    });
   };
 
   return (
@@ -191,8 +160,10 @@ export default function GetPokemon({
       <P>{pokeHP}</P>
 
       <ButtonParent>
-        <Button onClick={attack}>Attack</Button>
-        <Button onClick={catchPoke}>Catch</Button>
+        <ThemeProvider theme={theme}>
+          <Button onClick={attackPokeCall}>Attack</Button>
+          <Button onClick={catchPokeCall}>Catch</Button>
+        </ThemeProvider>
       </ButtonParent>
     </>
   );

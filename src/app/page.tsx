@@ -17,7 +17,7 @@ import Title from "./components/Title";
 // const Hello: React.FC<HelloProps> = ({text}) => <HelloStyles>{text}</HelloStyles>;
 
 const Section = styled.section`
-width: 80%;
+display: initial;
 `;
 
 export default function Home() {

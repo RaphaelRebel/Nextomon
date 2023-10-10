@@ -1,6 +1,6 @@
 "use client";
 
-import { Children, ReactNode, createContext, useState } from "react";
+import { Children, ReactElement, ReactNode, createContext, useState } from "react";
 
 interface pokeContext {
   // get all data from GetUserPokeData
@@ -18,7 +18,7 @@ export const PokeContext = createContext<pokeContext>({
   setUserPokeData: (value: Poke) => undefined,
 });
 
-export const PokeProvider: any = ({ children }: { children: ReactNode }) => {
+export const PokeProvider: Rea = ({ children }: { children: ReactNode }) => {
   const [userPokeData, setUserPokeData] = useState<Poke>({
     name: "",
     pokemon_id: 0,

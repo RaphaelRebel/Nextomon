@@ -12,7 +12,6 @@ const Nav = styled.nav`
   max-width: 30rem;
   background-color: #337ccf;
   color: white;
-  position: sticky;
 `;
 const Button = styled.button`
   width: 100%;

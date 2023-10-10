@@ -36,7 +36,9 @@ export default async function RootLayout({
         <SessionProvider session={session}>
           <main style={{display: "flex", position: "relative", width: "100vw"}}>
             <NavMenu />
-            <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
+            <StyledComponentsRegistry>
+              {children}
+              </StyledComponentsRegistry>
           </main>
         </SessionProvider>
       </body>
